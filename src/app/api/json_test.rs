@@ -1,15 +1,17 @@
 use actix_web::{get, web};
+use serde::Serialize;
 
-#[derive(serde::Serialize)]
+#[derive(Serialize)]
 pub struct InternetProvider {
-    name: String,
-    price: i32,
+    id: i32,
+    name: String
 }
 
-#[get("/json")]
+#[get("/json/json")]
 pub async fn make_json() -> web::Json<InternetProvider> {
+
     web::Json(InternetProvider {
-        name: String::from("Totalplay"),
-        price: 1300,
+        id: 1,
+        name: String::from("Totalplay")
     })
 }

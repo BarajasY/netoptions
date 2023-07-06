@@ -1,29 +1,30 @@
-use actix_web::{web::{Data}, App, HttpServer, middleware};
+use actix_web::{web::{Data, self}, App, HttpServer, middleware, http};
 use app::{init::initialize, db::connection_pool};
 use dotenv::dotenv;
-use serde::Serialize;
+use std::{env,io::Result};
+use actix_cors::Cors;
+use anyhow::Error;
 
 extern crate r2d2;
-
 pub mod app;
 
-#[derive(Serialize)]
-struct Internet {
-    name: String,
-    price: i32,
-}
-
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<()> {
+    env::set_var("RUST_BACKTRACE", "1");
     dotenv().ok();
 
     let pg_pool = Data::new(connection_pool());
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+              .allow_any_origin()
+              .allowed_methods(vec!["GET", "POST"]);
+
         App::new()
+        .wrap(middleware::Logger::default())
+        .wrap(cors)
         .app_data(pg_pool.clone())
             .configure(initialize)
-            .wrap(middleware::Logger::default())
     })
     .bind(("127.0.0.1", 8080))?
     .run()
